@@ -34,7 +34,7 @@ Write your monitoring configuration as a Python script:
 
   # Define contacts
   email = config.email_contact("me@example.com")
-  boxcar = config.boxcar_contact("my boxcar", "boxcar-api-key")
+  boxcar = config.boxcar_contact("boxcar-api-key", "my boxcar")
 
   # Define monitors
   ssh = config.port_monitor("ssh on server1", "server1.example.com", 22)

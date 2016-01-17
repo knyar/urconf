@@ -1,10 +1,8 @@
 from setuptools import setup, find_packages
 
-import urconf
-
 setup(
     name="urconf",
-    version=urconf.__version__,
+    version="2016.4",
     url="http://github.com/knyar/urconf",
     license="MIT",
     author="Anton Tolchanov",

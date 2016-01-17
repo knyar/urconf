@@ -95,7 +95,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","alertcontact":{"id":"0725","status":"0"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        config.email_contact("email1", "e@mail")
+        config.email_contact("e@mail", name="email1")
         config.email_contact("XYZ")
         config._sync_contacts()
 
@@ -103,7 +103,7 @@ class TestUptimeRobot(object):
         assert len(responses.calls) == 2
         assert_query_params(
             responses.calls[1].request, alertContactType=2,
-            alertContactFriendlyName="XYZ", alertContactValue="XYZ")
+            alertContactFriendlyName="", alertContactValue="XYZ")
 
     @responses.activate
     def test_add_boxcar_contact(self):
@@ -114,11 +114,11 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","alertcontact":{"id":"12344","status":"0"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        config.email_contact("email1", "e@mail")
-        config.boxcar_contact("boxcar1", "XYZ")
+        config.email_contact("e@mail", name="email1")
+        config.boxcar_contact("XYZ", name="boxcar1")
         config._sync_contacts()
 
-        assert config._contacts["boxcar1"]["id"] == "12344"
+        assert config._contacts["XYZ"]["id"] == "12344"
         assert len(responses.calls) == 2
         assert_query_params(
             responses.calls[1].request, alertContactType=4,
@@ -133,7 +133,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","alertcontact":{"id":"9876352"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        config.email_contact("email1", "e@mail")
+        config.email_contact("e@mail", name="email1")
         config._sync_contacts()
 
         assert len(responses.calls) == 2
@@ -173,7 +173,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"6969","status":"1"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("email1", "e@mail")
+        email = config.email_contact("e@mail", name="email1")
         config.keyword_monitor(
             "kw1", "http://fake", "test1", http_username="user1",
             http_password="pass1").add_contacts(email)
@@ -210,7 +210,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"123403"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("email1", "e@mail")
+        email = config.email_contact("e@mail", name="email1")
         config.port_monitor("ssh1", "host1", 22).add_contacts(email)
         config.port_monitor("smtp2", "host2", 25).add_contacts(email)
         config.sync()
@@ -235,7 +235,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"120011","status":"1"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("email1", "e@mail")
+        email = config.email_contact("e@mail", name="email1")
         # change keyword monitor to a port monitor
         config.port_monitor("kw1", "fake", 80).add_contacts(email)
         config.port_monitor("ssh1", "host1", 22).add_contacts(email)
@@ -261,7 +261,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"123401"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("email1", "e@mail")
+        email = config.email_contact("e@mail", name="email1")
         config.keyword_monitor(
             "kw1", "http://fake", "test1").add_contacts(email)
         config.port_monitor("ssh1", "host1", 22).add_contacts(email)
@@ -307,7 +307,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"123403"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("email1", "new@mail")
+        email = config.email_contact("new@mail", name="email1")
         config.keyword_monitor(
             "kw1", "http://fake", "test1", http_username="user1",
             http_password="pass1").add_contacts(email)
@@ -346,8 +346,7 @@ class TestUptimeRobot(object):
                          body=exception)
 
             config = urconf.UptimeRobot("", url="https://fake/", dry_run=True)
-            email = config.email_contact("email1", "e@mail")
-            email = config.email_contact("email2", "new@mail")
+            email = config.email_contact("new@mail", name="email2")
             config.keyword_monitor(
                 "kw1", "http://fake", "test1").add_contacts(email)
             config.port_monitor("ssh1", "host1", 22).add_contacts(email)

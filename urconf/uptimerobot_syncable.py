@@ -52,7 +52,7 @@ class Syncable(object):
     @property
     def name(self):
         """Defines primary identificator for this object used by urconf."""
-        return self[self._FIELDS[0]]  # friendlyname
+        return self[self._FIELDS[0]]
 
 
 class Monitor(Syncable):
@@ -172,7 +172,7 @@ class Monitor(Syncable):
 
 
 class Contact(Syncable):
-    _FIELDS = ["friendlyname", "type", "value"]
+    _FIELDS = ["value", "type", "friendlyname"]
     _TYPES = {
         # leading zeroes matter, so `id` should be treated is a string.
         "id": str,
@@ -180,7 +180,7 @@ class Contact(Syncable):
         "type": int,
         "value": str,
     }
-    _REQUIRED_FIELDS = _FIELDS
+    _REQUIRED_FIELDS = ["value", "type"]
 
     # Possible contact types, copied from https://uptimerobot.com/api
     TYPE_EMAIL = 2

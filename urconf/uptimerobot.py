@@ -245,43 +245,42 @@ class UptimeRobot(object):
         return result["alertcontact"]["id"]
 
     @typedecorator.returns("Contact")
-    @typedecorator.params(self=object, name=str, email=str)
-    def email_contact(self, name, email=None):
+    @typedecorator.params(self=object, email=str, name=str)
+    def email_contact(self, email, name=""):
         """Defines an email contact.
 
         Args:
+            email: (string) e-mail address.
             name: (string) name used for this contact in the Uptime Robot web
                 interface.
-            email: (string) e-mail address (defaults to `name` if not
-                specified)
 
         Returns:
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
-        assert name not in self._contacts, "Duplicate name: {}".format(name)
-        c = Contact(
-            friendlyname=name, type=Contact.TYPE_EMAIL, value=email or name)
+        c = Contact(friendlyname=name, type=Contact.TYPE_EMAIL, value=email)
+        assert c.name not in self._contacts, \
+            "Duplicate contact: {}".format(c.name)
         self._contacts[c.name] = c
         return c
 
     @typedecorator.returns("Contact")
-    @typedecorator.params(self=object, name=str, key=str)
-    def boxcar_contact(self, name, key=None):
+    @typedecorator.params(self=object, key=str, name=str)
+    def boxcar_contact(self, key, name=""):
         """Defines a Boxcar contact.
 
         Args:
+            key: (string) boxcar API key.
             name: (string) name used for this contact in the Uptime Robot web
                 interface.
-            key: (string) boxcar API key (defaults to `name` if not specified).
 
         Returns:
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
-        assert name not in self._contacts, "Duplicate name: {}".format(name)
-        c = Contact(
-            friendlyname=name, type=Contact.TYPE_BOXCAR, value=key or name)
+        c = Contact(friendlyname=name, type=Contact.TYPE_BOXCAR, value=key)
+        assert c.name not in self._contacts, \
+            "Duplicate contact: {}".format(c.name)
         self._contacts[c.name] = c
         return c
 
@@ -308,12 +307,13 @@ class UptimeRobot(object):
         Returns:
             Monitor object.
         """
-        assert name not in self._monitors, "Duplicate name: {}".format(name)
         keywordtype = 2 if should_exist else 1
         m = Monitor(friendlyname=name, type=Monitor.TYPE_KEYWORD, url=url,
                     keywordvalue=keyword, keywordtype=keywordtype,
                     httpusername=http_username, httppassword=http_password,
                     interval=interval)
+        assert m.name not in self._monitors, \
+            "Duplicate monitor: {}".format(m.name)
         self._monitors[m.name] = m
         return m
 
@@ -333,12 +333,13 @@ class UptimeRobot(object):
         Returns:
             Monitor object.
         """
-        assert name not in self._monitors, "Duplicate name: {}".format(name)
         # Port to subtype map from https://uptimerobot.com/api
         port_to_subtype = {80: 1, 443: 2, 21: 3, 25: 4, 110: 5, 143: 6}
         subtype = port_to_subtype.setdefault(port, 99)
         m = Monitor(friendlyname=name, type=Monitor.TYPE_PORT, url=hostname,
                     subtype=subtype, port=port, interval=interval)
+        assert m.name not in self._monitors, \
+            "Duplicate monitor: {}".format(m.name)
         self._monitors[m.name] = m
         return m
 
