@@ -1,0 +1,6 @@
+flake8
+pytest
+requests
+responses
+sphinx
+typedecorator

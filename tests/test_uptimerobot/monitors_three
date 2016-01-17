@@ -1,0 +1,5 @@
+{"stat": "ok", "offset": "0", "limit": "50", "total": "3","monitors":{"monitor":[
+        {"id":"123401","friendlyname":"kw1","url":"http://fake","type":"2","subtype":"","keywordtype":"2","keywordvalue":"test1","httpusername":"user1","httppassword":"pass1","port":"","interval":"300","status":"2","alltimeuptimeratio":"100","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]},
+        {"id":"123402","friendlyname":"ssh1","url":"host1","type":"4","subtype":"99","keywordtype":"0","keywordvalue":"","httpusername":"","httppassword":"","port":"22","interval":"300","status":"2","alltimeuptimeratio":"99.97","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]},
+	{"id":"123403","friendlyname":"smtp2","url":"host2","type":"4","subtype":"4","keywordtype":"0","keywordvalue":"","httpusername":"","httppassword":"","port":"25","interval":"300","status":"2","alltimeuptimeratio":"100","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]}
+]}}

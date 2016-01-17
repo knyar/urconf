@@ -1,0 +1,6 @@
+{"stat": "ok", "offset": "0", "limit": "50", "total": "1","alertcontacts": {
+  "alertcontact":[
+    {"id":"012345","value":"e@mail","friendlyname":"email1","type":"2","status":"2"},
+    {"id":"9876352","value":"v2","friendlyname":"v2","type":"4","status":"2"}
+  ]
+}}
