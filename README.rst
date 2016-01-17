@@ -1,6 +1,11 @@
 .. image:: https://readthedocs.org/projects/urconf/badge/?version=latest
   :target: http://urconf.readthedocs.org/en/latest/?badge=latest
-  :alt: Documentation Status
+
+.. image:: https://travis-ci.org/knyar/urconf.svg?branch=master
+  :target: https://travis-ci.org/knyar/urconf
+
+.. image:: https://coveralls.io/repos/knyar/urconf/badge.svg?branch=master&service=github
+  :target: https://coveralls.io/github/knyar/urconf?branch=master
 
 Declarative configuration library for Uptime Robot
 --------------------------------------------------
