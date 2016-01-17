@@ -1,7 +1,11 @@
+.. image:: https://readthedocs.org/projects/urconf/badge/?version=latest
+  :target: http://urconf.readthedocs.org/en/latest/?badge=latest
+  :alt: Documentation Status
+
 Declarative configuration library for Uptime Robot
 --------------------------------------------------
 
-``urconf`` is a Python library for Uptime Robot (<https://uptimerobot.com/>)
+``urconf`` is a Python library for Uptime Robot <https://uptimerobot.com/>
 API. It expects definition of all your contacts and monitors, and then issues
 API calls required to configure your Uptime Robot accordingly.
 
