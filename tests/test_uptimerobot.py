@@ -307,7 +307,7 @@ class TestUptimeRobot(object):
             body='{"stat": "ok","monitor":{"id":"123403"}}')
 
         config = urconf.UptimeRobot("", url="https://fake/")
-        email = config.email_contact("new@mail", name="email1")
+        email = config.email_contact("e@mail", name="email1-renamed")
         config.keyword_monitor(
             "kw1", "http://fake", "test1", http_username="user1",
             http_password="pass1").add_contacts(email)
@@ -319,8 +319,9 @@ class TestUptimeRobot(object):
         assert_query_params(
             responses.calls[1].request, alertContactID="012345")
         assert_query_params(
-            responses.calls[2].request, alertContactFriendlyName="email1",
-            alertContactType=2, alertContactValue="new@mail")
+            responses.calls[2].request,
+            alertContactFriendlyName="email1-renamed",
+            alertContactType=2, alertContactValue="e@mail")
         assert_query_params(
             responses.calls[4].request, monitorFriendlyName="kw1",
             monitorURL="http://fake", monitorType=2, monitorSubType=0,
