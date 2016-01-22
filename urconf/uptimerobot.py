@@ -245,6 +245,35 @@ class UptimeRobot(object):
         return result["alertcontact"]["id"]
 
     @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, type=int, value=str, friendlyname=str)
+    def contact(self, type, value, friendlyname=""):
+        """Adds a contact of a given type.
+
+        This is mainly a convenience function for other type-specific methods
+        (like email_contact), however it can be used directly to define a
+        contact of a type which is not supported by the newAlertContact
+        endpoint of Uptime Robot API. The contact will need to be created in
+        the Uptime Robot UI manually, but using this function to define it
+        as part of configuration will allow usage of such contact for
+        monitors.
+
+        Args:
+            type: (int) contact type.
+            value: (string) contact value.
+            friendlyname: (string) name used for this contact in the Uptime
+                Robot.
+
+        Returns:
+            Contact object which can later be used in add_contacts method
+                of a monitor.
+        """
+        c = Contact(friendlyname=friendlyname, type=type, value=value)
+        assert c.name not in self._contacts, \
+            "Duplicate contact: {}".format(c.name)
+        self._contacts[c.name] = c
+        return c
+
+    @typedecorator.returns("Contact")
     @typedecorator.params(self=object, email=str, name=str)
     def email_contact(self, email, name=""):
         """Defines an email contact.
@@ -258,11 +287,7 @@ class UptimeRobot(object):
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
-        c = Contact(friendlyname=name, type=Contact.TYPE_EMAIL, value=email)
-        assert c.name not in self._contacts, \
-            "Duplicate contact: {}".format(c.name)
-        self._contacts[c.name] = c
-        return c
+        return self.contact(Contact.TYPE_EMAIL, email, name)
 
     @typedecorator.returns("Contact")
     @typedecorator.params(self=object, key=str, name=str)
@@ -278,11 +303,7 @@ class UptimeRobot(object):
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
-        c = Contact(friendlyname=name, type=Contact.TYPE_BOXCAR, value=key)
-        assert c.name not in self._contacts, \
-            "Duplicate contact: {}".format(c.name)
-        self._contacts[c.name] = c
-        return c
+        return self.contact(Contact.TYPE_BOXCAR, key, name)
 
     @typedecorator.returns("Monitor")
     @typedecorator.params(

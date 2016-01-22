@@ -66,6 +66,18 @@ Currently implemented:
 Pull requests extending supported types of contacts or monitors are very
 welcome.
 
+If you need to use contact types which are not supported by the
+``newAlertContact`` method of Uptime Robot API (for example, HipChat or Slack),
+you can create the contact manually in the web UI, define it in your
+configuration file by calling the ``UptimeRobot.contact()`` method directly and
+then use that contact in ``add_contacts`` normally:
+
+.. code:: python
+
+  config = urconf.UptimeRobot("api-key")
+  hipchat = config.contact(type=10, value="123", friendlyname="Hipchat")
+  config.port_monitor("ssh1", "ssh1.example.com", 22).add_contacts(hipchat)
+
 Caveats
 -------
 
