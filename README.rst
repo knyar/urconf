@@ -75,15 +75,8 @@ then use that contact in ``add_contacts`` normally:
 .. code:: python
 
   config = urconf.UptimeRobot("api-key")
-  hipchat = config.contact(type=10, value="123", friendlyname="Hipchat")
+  hipchat = config.contact(type=10, value="123", friendly_name="Hipchat")
   config.port_monitor("ssh1", "ssh1.example.com", 22).add_contacts(hipchat)
-
-Caveats
--------
-
-Since uptimerobot API does not support modifying contacts, when contact
-modification is detected, ``urconf`` has to remove the old contact and re-add
-it. This means that e-mail contacts have to be re-verified manually again.
 
 Development notes
 -----------------

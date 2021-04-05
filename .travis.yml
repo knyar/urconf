@@ -3,7 +3,7 @@ python:
     - "2.7"
     - "3.4"
 install:
-    - pip install -r requirements.txt --use-mirrors
+    - pip install -r requirements.txt
     - pip install coveralls
 script:
     - py.test -v --cov urconf --cov-report term-missing

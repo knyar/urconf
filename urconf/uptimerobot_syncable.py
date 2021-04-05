@@ -54,27 +54,38 @@ class Syncable(object):
         """Defines primary identificator for this object used by urconf."""
         return self[self._FIELDS[0]]
 
+    @property
+    def _params_delete(self):
+        """Generates URL parameters for the delete* API call."""
+        return {"id": self["id"]}
 
 class Monitor(Syncable):
     _FIELDS = [
-        "friendlyname", "url", "type", "subtype", "keywordtype",
-        "keywordvalue", "httpusername", "httppassword", "port", "interval",
+        "friendly_name", "url", "type", "sub_type", "keyword_type",
+        "keyword_value", "http_username", "http_password", "port", "interval",
+        "http_auth_type", "http_method", "post_type", "post_value",
+        "post_content_type",
     ]
     _TYPES = {
         # leading zeroes matter, so `id` should be treated is a string.
         "id": str,
-        "friendlyname": str,
+        "friendly_name": str,
         "url": str,
         "type": int,
-        "subtype": int,
-        "keywordtype": int,
-        "keywordvalue": str,
-        "httpusername": str,
-        "httppassword": str,
+        "sub_type": int,
+        "keyword_type": int,
+        "keyword_value": str,
+        "http_username": str,
+        "http_password": str,
         "port": int,
         "interval": int,
+        "http_auth_type": int,
+        "http_method": int,
+        "post_type": int,
+        "post_value": str,
+        "post_content_type": int,
     }
-    _REQUIRED_FIELDS = ["friendlyname", "url", "type"]
+    _REQUIRED_FIELDS = ["friendly_name", "url", "type"]
 
     # Possible monitor types, copied from https://uptimerobot.com/api
     TYPE_KEYWORD = 2
@@ -84,14 +95,14 @@ class Monitor(Syncable):
         super(Monitor, self).__init__(**kwargs)
         self._added_contacts = []
         self._contacts_str = None
-        if "alertcontact" in kwargs:
+        if "alert_contacts" in kwargs:
             # This means that this Monitor object has been created based on
             # the data returned by getMonitors API call, which includes contact
             # IDs and options, which can be placed in the right format into
             # self._contacts_str.
             contacts = [
                 self._contact_str(c["id"], c["threshold"], c["recurrence"])
-                for c in kwargs["alertcontact"]]
+                for c in kwargs["alert_contacts"]]
             self._contacts_str = "-".join(sorted(contacts))
 
     def _contact_str(self, *args):
@@ -122,33 +133,18 @@ class Monitor(Syncable):
         return self._contacts == other._contacts
 
     @property
-    def _params_delete(self):
-        """Generates URL parameters for the deleteMonitor API call."""
-        return {"monitorID": self["id"]}
-
-    @property
     def _params_create(self):
         """Generates URL parameters for the newMonitor API call."""
-        create_params = {
-            "friendlyname": "monitorFriendlyName",
-            "url": "monitorURL",
-            "type": "monitorType",
-            "subtype": "monitorSubType",
-            "port": "monitorPort",
-            "keywordtype": "monitorKeywordType",
-            "keywordvalue": "monitorKeywordValue",
-            "httpusername": "monitorHTTPUsername",
-            "httppassword": "monitorHTTPPassword",
-            "interval": "monitorInterval",
-        }
-        params = {create_params[f]: self[f] for f in self._FIELDS}
-        params["monitorAlertContacts"] = self._contacts
+        params = self._values.copy()
+        params["alert_contacts"] = self._contacts
         return params
 
     @property
     def _params_update(self):
         """Generates URL parameters for the editMonitor API call."""
-        return self._params_create
+        params = self._params_create
+        del params["type"]
+        return params
 
     def add_contacts(self, *args, **kwargs):
         """Defines contacts for a monitor.
@@ -172,11 +168,11 @@ class Monitor(Syncable):
 
 
 class Contact(Syncable):
-    _FIELDS = ["value", "type", "friendlyname"]
+    _FIELDS = ["value", "type", "friendly_name"]
     _TYPES = {
         # leading zeroes matter, so `id` should be treated is a string.
         "id": str,
-        "friendlyname": str,
+        "friendly_name": str,
         "type": int,
         "value": str,
     }
@@ -187,15 +183,13 @@ class Contact(Syncable):
     TYPE_BOXCAR = 4
 
     @property
-    def _params_delete(self):
-        """Generates URL parameters for the deleteAlertContact API call."""
-        return {"alertContactID": self["id"]}
-
-    @property
     def _params_create(self):
         """Generates URL parameters for the newAlertContact API call."""
-        return {
-            "alertContactType": self["type"],
-            "alertContactValue": self["value"],
-            "alertContactFriendlyName": self["friendlyname"],
-        }
+        return {f: self[f] for f in self._FIELDS}
+
+    @property
+    def _params_update(self):
+        """Generates URL parameters for the editAlertContact API call."""
+        params = self._params_create
+        del params["type"]
+        return params

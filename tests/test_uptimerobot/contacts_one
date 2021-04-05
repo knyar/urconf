@@ -1,5 +1,3 @@
-{"stat": "ok", "offset": "0", "limit": "50", "total": "1","alertcontacts": {
-  "alertcontact":[
-    {"id":"012345","value":"e@mail","friendlyname":"email1", "type":"2","status":"2"}
-  ]
-}}
+{"stat": "ok", "offset": 0, "limit": 50, "total": 1, "alert_contacts": [
+    {"id":"012345","value":"e@mail","friendly_name":"email1", "type":2,"status":2}
+]}
