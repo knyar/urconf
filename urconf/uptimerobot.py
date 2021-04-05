@@ -12,12 +12,6 @@ typedecorator.setup_typecheck()
 
 DEFAULT_INTERVAL = 5  # minutes
 
-# There are some error codes that mean that mean there is no objects of a given
-# type (alert contacts or monitors) defined in the account yet. They are:
-# 212: The account has no monitors
-# 221: The account has no alert contacts
-NO_OBJECTS_ERROR_CODES = ["212", "221"]
-
 
 class UptimeRobotAPIError(Exception):
     """An exception which is raised when Uptime Robot API returns an error."""
@@ -31,7 +25,7 @@ class UptimeRobot(object):
     `self._contacts` and `self_monitors` lists.
     """
     @typedecorator.params(self=object, api_key=str, url=str, dry_run=bool)
-    def __init__(self, api_key, url="https://api.uptimerobot.com/",
+    def __init__(self, api_key, url="https://api.uptimerobot.com/v2/",
                  dry_run=False):
         """Initializes the configuration.
 
@@ -47,9 +41,8 @@ class UptimeRobot(object):
         # These are HTTP query parameters that will be passed to the API with
         # all requests.
         self.params = {
-            "apiKey": api_key,
+            "api_key": api_key,
             "format": "json",
-            "noJsonCallback": 1,
         }
         self._contacts = {}
         self._monitors = {}
@@ -58,13 +51,13 @@ class UptimeRobot(object):
 
     @typedecorator.params(self=object, method=str,
                           params={str: typedecorator.Union(str, int)})
-    def _api_get(self, method, params):
-        """Issues a GET request to the API and returns the result.
+    def _api_post(self, method, params):
+        """Issues a POST request to the API and returns the result.
 
         Args:
             method: (string) API method to call.
             params: ({string: string}) A dictionary containing key/value
-                pairs that will be used in the URL query string.
+                pairs that will be used in POST data.
 
         Returns:
             Unmarshalled API response as a Python object.
@@ -73,30 +66,30 @@ class UptimeRobot(object):
             UptimeRobotAPIError: when API returns an unexpected error.
         """
         url = self._url + method
-        resp = requests.get(url, params=params)
+        resp = requests.post(url, data=params)
         if resp.status_code != 200:
             raise UptimeRobotAPIError("Got HTTP error {} fetching {}".format(
                 resp.status_code, url))
-        logger.debug("GET {} {}: {}".format(url, params, resp.text))
+        logger.debug("POST {} {}: {}".format(url, params, resp.text))
         try:
             data = json.loads(resp.text)
         except ValueError as e:
             raise UptimeRobotAPIError(
                 "Error decoding JSON of {}: {}. Got: {}".format(
                     method, e, resp.text))
-        if data["stat"] != "ok" and data["id"] not in NO_OBJECTS_ERROR_CODES:
-            raise UptimeRobotAPIError("{} returned error: {} (code {})".format(
-                method, data["message"], data["id"]))
+        if data["stat"] != "ok":
+            raise UptimeRobotAPIError("{} returned error: {}".format(
+                method, data["error"]))
         return data
 
     @typedecorator.params(
         self=object, method=str, params={str: typedecorator.Union(str, int)},
         element_func=types.FunctionType)
-    def _api_get_paginated(self, method, params, element_func):
+    def _api_post_paginated(self, method, params, element_func):
         """Fetches all elements from a given API method.
 
         This function gets all elements that a given API method returns,
-        issuing multiple GET calls if results do not fit in a single page.
+        issuing multiple POST calls if results do not fit in a single page.
 
         Args:
             method: (string) API method to call.
@@ -113,13 +106,10 @@ class UptimeRobot(object):
         params = params.copy()
         result = []
         while True:
-            response = self._api_get(method, params)
-            if "id" in response and response["id"] in NO_OBJECTS_ERROR_CODES:
-                # No objects of given type exist yet, return empty list.
-                return []
+            response = self._api_post(method, params)
             result.extend(element_func(response))
-            for field in ("total", "offset", "limit"):
-                response[field] = int(response[field])
+            if "pagination" in response:
+                response = response["pagination"]
             if response["total"] > response["offset"] + response["limit"]:
                 params["offset"] = response["offset"] + response["limit"]
             else:
@@ -138,13 +128,10 @@ class UptimeRobot(object):
         """
         existing = {}
         params = self.params.copy()
-        params.update({"showMonitorAlertContacts": 1})
-        fetched = self._api_get_paginated(
-            "getMonitors", params, lambda x: x["monitors"]["monitor"])
+        params.update({"alert_contacts": 1})
+        fetched = self._api_post_paginated(
+            "getMonitors", params, lambda x: x["monitors"])
         for monitor_dict in fetched:
-            # getMonitors returns interval in seconds, while editMonitor
-            # expects minutes. Exciting, I know.
-            monitor_dict["interval"] = int(monitor_dict["interval"]) / 60
             m = Monitor(**monitor_dict)
             if m.name in self._monitors:
                 existing[m.name] = True
@@ -159,6 +146,8 @@ class UptimeRobot(object):
     @typedecorator.params(self=object, old="Monitor", new="Monitor")
     def _api_update_monitor(self, old, new):
         logger.info("Updating monitor {}".format(new.name))
+        logger.debug("Old: %s", old)
+        logger.debug("New: %s", new)
         if old["type"] != new["type"]:
             logger.info("Monitor type updates are not possible, "
                         "will remove and re-add {}".format(new.name))
@@ -169,8 +158,8 @@ class UptimeRobot(object):
             return
         params = self.params.copy()
         params.update(new._params_update)
-        params["monitorID"] = old["id"]
-        self._api_get("editMonitor", params)
+        params["id"] = old["id"]
+        self._api_post("editMonitor", params)
 
     @typedecorator.params(self=object, monitor="Monitor")
     def _api_delete_monitor(self, monitor):
@@ -179,7 +168,7 @@ class UptimeRobot(object):
             return
         params = self.params.copy()
         params.update(monitor._params_delete)
-        self._api_get("deleteMonitor", params)
+        self._api_post("deleteMonitor", params)
 
     @typedecorator.params(self=object, monitor="Monitor")
     def _api_create_monitor(self, monitor):
@@ -188,7 +177,7 @@ class UptimeRobot(object):
             return
         params = self.params.copy()
         params.update(monitor._params_create)
-        self._api_get("newMonitor", params)
+        self._api_post("newMonitor", params)
 
     def _sync_contacts(self):
         """Synchronizes locally defined list of contacts with the server.
@@ -202,28 +191,43 @@ class UptimeRobot(object):
         `_sync_monitors`.
         """
         existing = {}
-        fetched = self._api_get_paginated(
+        fetched = self._api_post_paginated(
             "getAlertContacts", self.params,
-            lambda x: x["alertcontacts"]["alertcontact"])
+            lambda x: x["alert_contacts"])
         for contact_dict in fetched:
             c = Contact(**contact_dict)
             if c.name in self._contacts:
+                existing[c.name] = True
+                # Populate the `id` field based on the contact information
+                # we got from the server. This id will be required for the
+                # newMonitor / editMonitor calls we make later.
+                self._contacts[c.name]["id"] = c["id"]
                 if c != self._contacts[c.name]:
-                    # There is no editContact call, we have to delete the old
-                    # contact (and let it be added again by the code below).
-                    self._api_delete_contact(c)
-                else:
-                    existing[c.name] = True
-                    # Populate the `id` field based on the contact information
-                    # we got from the server. This id will be required for the
-                    # newMonitor / editMonitor calls we make later.
-                    self._contacts[c.name]["id"] = c["id"]
+                    self._api_update_contact(c, self._contacts[c.name])
             else:
                 self._api_delete_contact(c)
         for name in self._contacts:
             if name not in existing:
                 contact_id = self._api_create_contact(self._contacts[name])
                 self._contacts[name]["id"] = contact_id
+
+    @typedecorator.params(self=object, old="Contact", new="Contact")
+    def _api_update_contact(self, old, new):
+        logger.info("Updating contact {}".format(new.name))
+        logger.debug("Old: %s", old)
+        logger.debug("New: %s", new)
+        if old["type"] != new["type"]:
+            logger.info("Contact type updates are not possible, "
+                        "will remove and re-add {}".format(new.name))
+            self._api_delete_contact(old)
+            self._api_create_contact(new)
+            return
+        if self._dry_run:
+            return
+        params = self.params.copy()
+        params.update(new._params_update)
+        params["id"] = old["id"]
+        self._api_post("editAlertContact", params)
 
     @typedecorator.params(self=object, contact="Contact")
     def _api_delete_contact(self, contact):
@@ -232,7 +236,7 @@ class UptimeRobot(object):
             return
         params = self.params.copy()
         params.update(contact._params_delete)
-        self._api_get("deleteAlertContact", params)
+        self._api_post("deleteAlertContact", params)
 
     @typedecorator.params(self=object, contact="Contact")
     def _api_create_contact(self, contact):
@@ -241,7 +245,7 @@ class UptimeRobot(object):
             return
         params = self.params.copy()
         params.update(contact._params_create)
-        result = self._api_get("newAlertContact", params)
+        result = self._api_post("newAlertContact", params)
         return result["alertcontact"]["id"]
 
     @typedecorator.returns("Contact")
@@ -267,15 +271,16 @@ class UptimeRobot(object):
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
-        c = Contact(friendlyname=friendlyname, type=type, value=value)
+        c = Contact(friendly_name=friendlyname, type=type, value=value)
         assert c.name not in self._contacts, \
             "Duplicate contact: {}".format(c.name)
         self._contacts[c.name] = c
+        logging.debug("Created contact: %s", c)
         return c
 
     @typedecorator.returns("Contact")
     @typedecorator.params(self=object, email=str, name=str)
-    def email_contact(self, email, name=""):
+    def email_contact(self, email, name=None):
         """Defines an email contact.
 
         Args:
@@ -287,6 +292,8 @@ class UptimeRobot(object):
             Contact object which can later be used in add_contacts method
                 of a monitor.
         """
+        if not name:
+            name = email
         return self.contact(Contact.TYPE_EMAIL, email, name)
 
     @typedecorator.returns("Contact")
@@ -329,10 +336,10 @@ class UptimeRobot(object):
             Monitor object.
         """
         keywordtype = 2 if should_exist else 1
-        m = Monitor(friendlyname=name, type=Monitor.TYPE_KEYWORD, url=url,
-                    keywordvalue=keyword, keywordtype=keywordtype,
-                    httpusername=http_username, httppassword=http_password,
-                    interval=interval)
+        m = Monitor(friendly_name=name, type=Monitor.TYPE_KEYWORD, url=url,
+                    keyword_value=keyword, keyword_type=keywordtype,
+                    http_username=http_username, http_password=http_password,
+                    interval=interval*60)
         assert m.name not in self._monitors, \
             "Duplicate monitor: {}".format(m.name)
         self._monitors[m.name] = m
@@ -357,8 +364,8 @@ class UptimeRobot(object):
         # Port to subtype map from https://uptimerobot.com/api
         port_to_subtype = {80: 1, 443: 2, 21: 3, 25: 4, 110: 5, 143: 6}
         subtype = port_to_subtype.setdefault(port, 99)
-        m = Monitor(friendlyname=name, type=Monitor.TYPE_PORT, url=hostname,
-                    subtype=subtype, port=port, interval=interval)
+        m = Monitor(friendly_name=name, type=Monitor.TYPE_PORT, url=hostname,
+                    sub_type=subtype, port=port, interval=interval*60)
         assert m.name not in self._monitors, \
             "Duplicate monitor: {}".format(m.name)
         self._monitors[m.name] = m

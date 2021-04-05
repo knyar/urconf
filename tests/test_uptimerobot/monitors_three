@@ -1,5 +1,7 @@
-{"stat": "ok", "offset": "0", "limit": "50", "total": "3","monitors":{"monitor":[
-        {"id":"123401","friendlyname":"kw1","url":"http://fake","type":"2","subtype":"","keywordtype":"2","keywordvalue":"test1","httpusername":"user1","httppassword":"pass1","port":"","interval":"300","status":"2","alltimeuptimeratio":"100","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]},
-        {"id":"123402","friendlyname":"ssh1","url":"host1","type":"4","subtype":"99","keywordtype":"0","keywordvalue":"","httpusername":"","httppassword":"","port":"22","interval":"300","status":"2","alltimeuptimeratio":"99.97","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]},
-	{"id":"123403","friendlyname":"smtp2","url":"host2","type":"4","subtype":"4","keywordtype":"0","keywordvalue":"","httpusername":"","httppassword":"","port":"25","interval":"300","status":"2","alltimeuptimeratio":"100","alertcontact":[{"id":"012345","type":"2","value":"e@mail","threshold":"0","recurrence":"0"}]}
-]}}
+{"stat": "ok",
+  "pagination": {"offset": 0, "limit": 50, "total": 3},
+  "monitors":[
+    {"id":"123401","friendly_name":"kw1","url":"http://fake","type":2,"sub_type":"","keyword_type":2,"keyword_value":"test1","http_username":"user1","http_password":"pass1","port":"","interval":300,"status":2,"alert_contacts":[{"id":"012345","type":2,"value":"e@mail","threshold":0,"recurrence":0}]},
+    {"id":"123402","friendly_name":"ssh1","url":"host1","type":4,"sub_type":99,"keyword_type":0,"keyword_value":"","http_username":"","http_password":"","port":22,"interval":300,"status":2,"alert_contacts":[{"id":"012345","type":2,"value":"e@mail","threshold":0,"recurrence":0}]},
+	  {"id":"123403","friendly_name":"smtp2","url":"host2","type":4,"sub_type":4,"keyword_type":0,"keyword_value":"","http_username":"","http_password":"","port":25,"interval":300,"status":2,"alert_contacts":[{"id":"012345","type":2,"value":"e@mail","threshold":0,"recurrence":0}]}
+]}
