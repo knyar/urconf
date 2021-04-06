@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="urconf",
-    version="2016.5",
+    version="2021.1",
     url="http://github.com/knyar/urconf",
     license="MIT",
     author="Anton Tolchanov",
