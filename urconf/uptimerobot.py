@@ -299,18 +299,32 @@ class UptimeRobot(object):
     @typedecorator.returns("Contact")
     @typedecorator.params(self=object, key=str, name=str)
     def boxcar_contact(self, key, name=""):
-        """Defines a Boxcar contact.
-
-        Args:
-            key: (string) boxcar API key.
-            name: (string) name used for this contact in the Uptime Robot web
-                interface.
-
-        Returns:
-            Contact object which can later be used in add_contacts method
-                of a monitor.
-        """
         return self.contact(Contact.TYPE_BOXCAR, key, name)
+
+    @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, number=str, name=str)
+    def sms_contact(self, number, name=""):
+        return self.contact(Contact.TYPE_SMS, number, name)
+
+    @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, value=str, name=str)
+    def twitter_dm_contact(self, value, name=""):
+        return self.contact(Contact.TYPE_TWITTER_DM, value, name)
+
+    @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, value=str, name=str)
+    def webhook_contact(self, value, name=""):
+        return self.contact(Contact.TYPE_WEBHOOK, value, name)
+
+    @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, value=str, name=str)
+    def pushbullet_contact(self, value, name=""):
+        return self.contact(Contact.TYPE_PUSHBULLET, value, name)
+
+    @typedecorator.returns("Contact")
+    @typedecorator.params(self=object, value=str, name=str)
+    def pushover_contact(self, value, name=""):
+        return self.contact(Contact.TYPE_PUSHOVER, value, name)
 
     @typedecorator.returns("Monitor")
     @typedecorator.params(

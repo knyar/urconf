@@ -60,7 +60,7 @@ Functionality
 
 Currently implemented:
 
-- email and boxcar contacts;
+- SMS, email, Twitter DM, Boxcar, Webhook, Pushbullet and Pushover contacts;
 - keyword and port monitors.
 
 Pull requests extending supported types of contacts or monitors are very

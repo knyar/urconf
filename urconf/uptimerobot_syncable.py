@@ -179,8 +179,13 @@ class Contact(Syncable):
     _REQUIRED_FIELDS = ["value", "type"]
 
     # Possible contact types, copied from https://uptimerobot.com/api
+    TYPE_SMS = 1
     TYPE_EMAIL = 2
+    TYPE_TWITTER_DM = 3
     TYPE_BOXCAR = 4
+    TYPE_WEBHOOK = 5
+    TYPE_PUSHBULLET = 6
+    TYPE_PUSHOVER = 9
 
     @property
     def _params_create(self):
